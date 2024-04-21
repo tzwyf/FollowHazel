@@ -26,13 +26,14 @@ project "Hazel"         -- 项目名称
 
     includedirs
     {
+        "%{prj.name}/src",
         "%{prj.name}/vendor/spdlog/include"
     }
 
     filter "system:windows" --对特定的系统(windows、OS..)、配置(Debug/Release)、平台(x64、x86)的项目属性
         cppdialect "C++17"  --C++特性版本
         staticruntime "On"  
-        systemversion "10.0.22621.0"    -- windows SKD版本
+        systemversion "latest"    -- windows SKD版本
 
         defines
         {
@@ -89,7 +90,7 @@ project "Sandbox"
     filter "system:windows" 
         cppdialect "C++17" 
         staticruntime "On"  
-        systemversion "10.0.22621.0" 
+        systemversion "latest" 
 
         defines
         {
