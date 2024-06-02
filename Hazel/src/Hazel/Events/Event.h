@@ -2,9 +2,6 @@
 
 #include "Hazel/Core.h"
 
-#include <string>
-#include <functional>
-
 namespace Hazel {
 
     //定义一个事件类型的枚举
@@ -12,7 +9,7 @@ namespace Hazel {
         None = 0,
         WindowClose, WindowResize, WindowFocus, WindowLastFocus, WindowMoved,
         AppTick, AppUpdate, AppRender,
-        KeyPressed, KeyReleased,
+        KeyPressed, KeyReleased, KeyTyped,
         MouseButtonPressed, MouseButtonReleased, MouseMoved, MouseScrolled
     };
 
@@ -46,6 +43,8 @@ namespace Hazel {
         inline bool IsInCategory(EventCategory category) {
             return GetCategoryFlags() & category;
         }
+
+		bool Handled = m_Handled;
 
     protected:
         bool m_Handled = false;

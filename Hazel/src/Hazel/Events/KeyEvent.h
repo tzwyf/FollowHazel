@@ -2,8 +2,6 @@
 
 #include "Event.h"
 
-#include <sstream>
-
 namespace Hazel {
     class HAZEL_API KeyEvent : public Event {
     public:
@@ -19,9 +17,9 @@ namespace Hazel {
     };
 
     //键盘按键按下事件
-    class HAZEL_API KeyPressEvent : public KeyEvent {
+    class HAZEL_API KeyPressedEvent : public KeyEvent {
     public:
-        KeyPressEvent(int keyCode, int repeatCount)
+        KeyPressedEvent(int keyCode, int repeatCount)
             :KeyEvent(keyCode), m_RepeatCount(repeatCount) {}
 
         inline int GetRepeatCount() const { return m_RepeatCount; }
@@ -39,9 +37,9 @@ namespace Hazel {
     };
 
     //键盘按键释放事件
-    class HAZEL_API KeyReleaseEvent : public KeyEvent {
+    class HAZEL_API KeyReleasedEvent : public KeyEvent {
     public:
-        KeyReleaseEvent(int keyCode)
+        KeyReleasedEvent(int keyCode)
             :KeyEvent(keyCode) {}
 
         std::string ToString() const override {
@@ -52,4 +50,21 @@ namespace Hazel {
 
         EVENT_CLASS_TYPE(KeyReleased)
     };
+
+	//字符输入事件
+	class HAZEL_API KeyTypedEvent : public KeyEvent// 增加接收字符事件
+	{
+	public:
+		KeyTypedEvent(int keycode)
+			: KeyEvent(keycode) {}
+
+		std::string ToString() const override
+		{
+			std::stringstream ss;
+			ss << "KeyTypedEvent: " << m_KeyCode; // 输出在窗口
+			return ss.str();
+		}
+
+		EVENT_CLASS_TYPE(KeyTyped)
+	};
 }

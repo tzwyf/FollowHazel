@@ -1,110 +1,135 @@
-workspace "Hazel"        	-- 解决方案名称
-    architecture "x64"   
-    
-    configurations
-    {
-        "Debug",
-        "Release",    
-        "Dist"
-    }
--- 输出路径变量：结构类似于 debug-windows-x64    
-outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"   
+workspace "Hazel"		-- sln文件名
+	architecture "x64"	
+	configurations{
+		"Debug",
+		"Release",
+		"Dist"
+	}
+	-- 启动项目
+	startproject "Sandbox"
 
-project "Hazel"         -- 项目名称
-    location "Hazel"
-    kind "SharedLib" 		-- DLL
-    language "C++"
+-- https://github.com/premake/premake-core/wiki/Tokens#value-tokens
+-- 组成输出目录:Debug-windows-x86_64
+outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
-    targetdir ("bin/" .. outputdir .. "/%{prj.name}") -- lua的字符串拼接方式 ..
-    objdir ("bin-int/" .. outputdir .. "/%{prj.name}") -- 编译中间产物存放路径
-    
-    files                                   -- 包含项目下所有的.h .cpp文件
-    {
-        "%{prj.name}/src/**.h",    
-        "%{prj.name}/src/**.cpp"
-    }
+-- 包含相对解决方案的目录
+IncludeDir = {}
+IncludeDir["GLFW"] = "Hazel/vendor/GLFW/include"
+IncludeDir["Glad"] = "Hazel/vendor/Glad/include"
+IncludeDir["ImGui"] = "Hazel/vendor/imgui"
 
-    includedirs
-    {
-        "%{prj.name}/src",
-        "%{prj.name}/vendor/spdlog/include"
-    }
+include "Hazel/vendor/GLFW"
+include "Hazel/vendor/Glad"
+include "Hazel/vendor/imgui"
 
-    filter "system:windows" --对特定的系统(windows、OS..)、配置(Debug/Release)、平台(x64、x86)的项目属性
-        cppdialect "C++17"  --C++特性版本
-        staticruntime "On"  
-        systemversion "latest"    -- windows SKD版本
+project "Hazel"		--Hazel项目
+	location "Hazel"--在sln所属文件夹下的Hazel文件夹
+	kind "SharedLib"--dll动态库
+	language "C++"
+	targetdir ("bin/" .. outputdir .. "/%{prj.name}") -- 输出目录
+	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")-- 中间目录
+	-- On:代码生成的运行库选项是MTD,静态链接MSVCRT.lib库;
+	-- Off:代码生成的运行库选项是MDD,动态链接MSVCRT.dll库;打包后的exe放到另一台电脑上若无这个dll会报错
+	staticruntime "Off"	
 
-        defines
-        {
-            "HZ_PLATFORM_WINDOWS",
-            "HZ_BUILD_DLL"
-        }
+	-- 预编译头 
+	pchheader "hzpch.h"
+	pchsource "Hazel/src/hzpch.cpp"
 
-        postbuildcommands	-- 后构建命令，构建完毕后执行的操作
-        {
-            -- 拷贝本项目输出文件中的dll到指定文件夹中
-            ("{COPY} %{cfg.buildtarget.relpath} ../bin/" .. outputdir .. "/Sandbox")
-        }
+	-- 包含的所有h和cpp文件
+	files{
+		"%{prj.name}/src/**.h",
+		"%{prj.name}/src/**.cpp"
+	}
+	-- 包含目录
+	includedirs{
+		"%{prj.name}/src",
+		"%{prj.name}/vendor/spdlog/include",
+		"%{IncludeDir.GLFW}",
+		"%{IncludeDir.Glad}",
+		"%{IncludeDir.ImGui}"
+	}
+	links { 
+		"GLFW",
+		"Glad",
+		"ImGui",
+		"opengl32.lib"
+	}
 
-    filter "configurations:Debug"
-        defines "HZ_DEBUG"
-        symbols "On"
+	-- 如果是window系统
+	filter "system:windows"
+		cppdialect "C++17"
+		--staticruntime "On"
+		systemversion "latest"	-- windowSDK版本
+		-- 预处理器定义
+		defines{
+			"HZ_PLATFORM_WINDOWS",
+			"HZ_BUILD_DLL",
+			"GLFW_INCLUDE_NONE" -- 让GLFW不包含OpenGL
+		}
+		-- 编译好后移动Hazel.dll文件到Sandbox文件夹下
+		postbuildcommands{
+			("{COPY} %{cfg.buildtarget.relpath} ../bin/" .. outputdir .. "/Sandbox")
+		}
+	-- 不同配置下的预定义不同
+	filter "configurations:Debug"
+		defines "HZ_DEBUG"
+		runtime "Debug"
+		symbols "On"
 
-    filter "configurations:Release"
-        defines "HZ_RELEASE"
-        optimize "On" 
+	filter "configurations:Release"
+		defines "HZ_RELEASE"
+		runtime "Release"
+		optimize "On"
 
-    filter "configurations:Dist"
-        defines "HZ_DIST"
-        optimize "On"
-    -- 可以过滤多个选项，一起配置
-    -- filter {"system:windows", "configurations:Release"}
-    --     buildoptions "/MT"
+	filter "configurations:Dist"
+		defines "HZ_DIST"
+		runtime "Release"
+		optimize "On"
 
 project "Sandbox"
-    location "Sandbox"
-    kind "ConsoleApp"
-    language "C++"
+	location "Sandbox"
+	kind "ConsoleApp"
+	language "C++"
+	staticruntime "Off"	
 
-    targetdir ("bin/" .. outputdir .. "/%{prj.name}")
-    objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-    
-    files   -- 参与编译的文件
-    {
-        "%{prj.name}/src/**.h",    
-        "%{prj.name}/src/**.cpp"
-    }
+	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 
-    includedirs
-    {
-        "Hazel/vendor/spdlog/include",
-        "Hazel/src"
-    }
+	files{
+		"%{prj.name}/src/**.h",
+		"%{prj.name}/src/**.cpp"
+	}
+	-- 同样包含spdlog头文件
+	includedirs{
+		"Hazel/vendor/spdlog/include",
+		"Hazel/src"
+	}
+	-- 引用hazel
+	links{
+		"Hazel"
+	}
 
-    links        --链接库
-    {
-        "Hazel"
-    }
+	filter "system:windows"
+		cppdialect "C++17"
+		systemversion "latest"
 
-    filter "system:windows" 
-        cppdialect "C++17" 
-        staticruntime "On"  
-        systemversion "latest" 
+		defines{
+			"HZ_PLATFORM_WINDOWS"
+		}
 
-        defines
-        {
-            "HZ_PLATFORM_WINDOWS"
-        }
+	-- 不同配置下的预定义不同
+	filter "configurations:Debug"
+		defines "HZ_DEBUG"
+		runtime "Debug"
+		symbols "On"
 
-    filter "configurations:Debug"
-        defines "HZ_DEBUG"
-        symbols "On"
+	filter "configurations:Release"
+		defines "HZ_RELEASE"
+		runtime "Release"
+		optimize "On"
 
-    filter "configurations:Release"
-        defines "HZ_RELEASE"
-        optimize "On" 
-
-    filter "configurations:Dist"
-        defines "HZ_DIST"
-        optimize "On"
+	filter "configurations:Dist"
+		defines "HZ_DIST"
+		runtime "Release"
+		optimize "On"
