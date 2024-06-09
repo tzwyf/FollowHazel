@@ -4,6 +4,9 @@
 #include "Hazel/Events/ApplicationEvent.h"
 
 #include <glad/glad.h>
+#include "GLFW/glfw3.h"
+
+#include "Input.h"
 
 namespace Hazel {
 
@@ -44,7 +47,7 @@ namespace Hazel {
 
 		for (auto it = m_LayerStack.end(); it != m_LayerStack.begin();) {
 			(*--it)->OnEvent(e);
-			if (e.Handled)
+			if (e.Handled())
 				break;
 		}
 	}

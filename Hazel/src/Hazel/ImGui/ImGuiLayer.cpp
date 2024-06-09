@@ -74,7 +74,7 @@ namespace Hazel{
 
 	// 从Application的Event传递过来的事件
 	void ImGuiLayer::OnEvent(Event& event) {
-		HZ_TRACE("{0}", event);
+		//HZ_TRACE("{0}", event);
 
 		// 用事件调度器拦截ImGuiLayer想要拦截的事件并用本类函数处理
 		/*
