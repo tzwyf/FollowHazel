@@ -11,9 +11,10 @@ namespace Hazel {
 
 		virtual ~Layer();
 
-		virtual void OnAttach() {};
-		virtual void OnDetach() {};
-		virtual void OnUpdate() {};
+		virtual void OnAttach() {} // 应用添加此层执行
+		virtual void OnDetach() {} // 应用分离此层执行
+		virtual void OnUpdate() {} // 每层更新
+		virtual void OnImGuiRender() {}// 每层都可以拥有自己的UI窗口 !
 		virtual void OnEvent(Event& event){}
 
 		inline const std::string& GetName() const { return m_DebugName; }
