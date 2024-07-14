@@ -25,14 +25,16 @@ include "Hazel/vendor/imgui"
 
 project "Hazel"		--Hazel项目
 	location "Hazel"--在sln所属文件夹下的Hazel文件夹
-	kind "SharedLib"--dll动态库
+	kind "StaticLib"--静态库
 	language "C++"
-	targetdir ("bin/" .. outputdir .. "/%{prj.name}") -- 输出目录
-	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")-- 中间目录
+	cppdialect "C++17"
 	-- On:代码生成的运行库选项是MTD,静态链接MSVCRT.lib库;
 	-- Off:代码生成的运行库选项是MDD,动态链接MSVCRT.dll库;打包后的exe放到另一台电脑上若无这个dll会报错
-	staticruntime "Off"	
+	staticruntime "On"
 
+	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+	
 	-- 预编译头 
 	pchheader "hzpch.h"
 	pchsource "Hazel/src/hzpch.cpp"
@@ -45,6 +47,11 @@ project "Hazel"		--Hazel项目
 		"%{prj.name}/vendor/glm/glm/**.hpp",
 		"%{prj.name}/vendor/glm/glm/**.inl"
 	}
+
+	defines{
+		"_CRT_SECURE_NO_WARNINGS"
+	}
+
 	-- 包含目录
 	includedirs{
 		"%{prj.name}/src",
@@ -63,19 +70,14 @@ project "Hazel"		--Hazel项目
 
 	-- 如果是window系统
 	filter "system:windows"
-		cppdialect "C++17"
-		--staticruntime "On"
-		systemversion "latest"	-- windowSDK版本
+		systemversion "10.0.17763.0"	-- windowSDK版本
 		-- 预处理器定义
 		defines{
 			"HZ_PLATFORM_WINDOWS",
 			"HZ_BUILD_DLL",
 			"GLFW_INCLUDE_NONE" -- 让GLFW不包含OpenGL
 		}
-		-- 编译好后移动Hazel.dll文件到Sandbox文件夹下
-		postbuildcommands{
-			("{COPY} %{cfg.buildtarget.relpath} ../bin/" .. outputdir .. "/Sandbox")
-		}
+
 	-- 不同配置下的预定义不同
 	filter "configurations:Debug"
 		defines "HZ_DEBUG"
@@ -96,7 +98,8 @@ project "Sandbox"
 	location "Sandbox"
 	kind "ConsoleApp"
 	language "C++"
-	staticruntime "Off"	
+	cppdialect "C++17"
+	staticruntime "On"	
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
@@ -117,8 +120,7 @@ project "Sandbox"
 	}
 
 	filter "system:windows"
-		cppdialect "C++17"
-		systemversion "latest"
+		systemversion "10.0.17763.0"
 
 		defines{
 			"HZ_PLATFORM_WINDOWS"

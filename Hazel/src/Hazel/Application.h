@@ -36,7 +36,9 @@ namespace Hazel {
 		static Application* s_Instance;
     };
 
-    // to be defined in client
+	// to be defined in client
+	/*将 Application* CreateApplication(); 声明在类外面的主要目的是为客户端提供一个创建 Application 实例的扩展点。
+	这样可以使库的设计更加灵活，允许用户在不修改库代码的情况下自定义 Application 的行为和初始化过程*/
     Application* CreateApplication();
 }
 

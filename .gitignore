@@ -5,3 +5,5 @@ bin-int/
 
 #忽略的文件
 *.user
+classUML.drawio
+.$classUML.drawio.bkp
